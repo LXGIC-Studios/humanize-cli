@@ -1,0 +1,42 @@
+{
+  "name": "humanize-cli",
+  "version": "1.0.0",
+  "description": "Analyze and humanize AI-generated text. Detect AI markers, score detection risk, and get actionable improvement suggestions.",
+  "main": "src/index.js",
+  "bin": {
+    "humanize": "./bin/humanize.js"
+  },
+  "scripts": {
+    "test": "node test/index.js",
+    "lint": "eslint src/",
+    "build": "echo 'No build step needed'"
+  },
+  "keywords": [
+    "ai-detection",
+    "humanize",
+    "text-analysis",
+    "copywriting",
+    "ai-writing",
+    "gpt-detector",
+    "content-optimization",
+    "writing-tools"
+  ],
+  "author": "LXGIC Studios <lxgicstudios@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lxgicstudios/humanize-cli.git"
+  },
+  "homepage": "https://github.com/lxgicstudios/humanize-cli#readme",
+  "bugs": {
+    "url": "https://github.com/lxgicstudios/humanize-cli/issues"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "docs/"
+  ]
+}
