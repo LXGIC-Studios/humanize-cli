@@ -195,9 +195,12 @@ function transform(text) {
   let result = text;
   const changes = [];
   
-  // Replace AI vocabulary
-  for (const [word, alternatives] of Object.entries(AI_VOCABULARY)) {
-    const regex = new RegExp(`\\b${word}\\b`, 'gi');
+  // Replace AI vocabulary (sort by length, longest first to avoid partial matches)
+  const sortedVocab = Object.entries(AI_VOCABULARY)
+    .sort((a, b) => b[0].length - a[0].length);
+    
+  for (const [word, alternatives] of sortedVocab) {
+    const regex = new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
     if (regex.test(result)) {
       const replacement = alternatives[0];
       result = result.replace(regex, replacement);

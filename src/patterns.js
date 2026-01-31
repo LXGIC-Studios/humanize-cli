@@ -1,10 +1,14 @@
 // AI vocabulary detection with suggested replacements
 const AI_VOCABULARY = {
   // The absolute worst offenders
-  'delve': ['dig into', 'explore', 'look at', 'get into'],
-  'delves': ['digs into', 'explores', 'looks at', 'gets into'],
-  'delving': ['digging into', 'exploring', 'looking at'],
-  'delved': ['dug into', 'explored', 'looked at'],
+  'delve into': ['dig into', 'explore', 'look at', 'get into'],
+  'delves into': ['digs into', 'explores', 'looks at', 'gets into'],
+  'delving into': ['digging into', 'exploring', 'looking at'],
+  'delved into': ['dug into', 'explored', 'looked at'],
+  'delve': ['explore', 'look at', 'examine'],
+  'delves': ['explores', 'looks at', 'examines'],
+  'delving': ['exploring', 'looking at', 'examining'],
+  'delved': ['explored', 'looked at', 'examined'],
   'leverage': ['use', 'take advantage of', 'work with'],
   'leveraging': ['using', 'taking advantage of', 'working with'],
   'utilize': ['use', 'work with', 'apply'],
