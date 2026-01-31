@@ -203,15 +203,19 @@ ${c.bold}COMMANDS${c.reset}
   score, s       Calculate detection risk score (0-100%)
   suggest, sg    Get actionable improvement suggestions
   transform, t   Apply automatic humanization fixes
+  watch, w       Watch directory for changes and analyze
+  config, c      Show configuration and API status
   help           Show this help message
 
 ${c.bold}OPTIONS${c.reset}
-  -f, --file     Read input from file
-  -j, --json     Output results as JSON
-  -V, --verbose  Show detailed output
-  -q, --quiet    Minimal output
-  -h, --help     Show help
-  -v, --version  Show version
+  -f, --file       Read input from file
+  -j, --json       Output results as JSON
+  -V, --verbose    Show detailed output
+  -q, --quiet      Minimal output
+  -a, --api        Include API checks (GPTZero/Originality.ai)
+  -t, --threshold  Alert threshold for watch mode (default: 70)
+  -h, --help       Show help
+  -v, --version    Show version
 
 ${c.bold}EXAMPLES${c.reset}
   ${c.dim}# Analyze text directly${c.reset}
@@ -226,12 +230,23 @@ ${c.bold}EXAMPLES${c.reset}
   ${c.dim}# Transform and copy result${c.reset}
   humanize transform --file draft.txt | pbcopy
 
+  ${c.dim}# Watch directory for high-risk content${c.reset}
+  humanize watch ./content --threshold 60
+
+  ${c.dim}# Check with API integrations${c.reset}
+  humanize analyze --api --file article.txt
+
 ${c.bold}WHAT IT DETECTS${c.reset}
   • AI vocabulary (delve, leverage, comprehensive, seamless...)
   • Unnatural patterns (perfect structure, no contractions)
   • Low sentence variety and uniform rhythm
   • Missing personal voice and opinions
   • Over-formal or corporate tone
+
+${c.bold}API INTEGRATION${c.reset}
+  Set environment variables to enable API checks:
+  ${c.dim}export GPTZERO_API_KEY="your-key"${c.reset}
+  ${c.dim}export ORIGINALITY_API_KEY="your-key"${c.reset}
 
 ${c.dim}Built by LXGIC Studios | https://github.com/lxgicstudios/humanize-cli${c.reset}
 `);
@@ -241,6 +256,118 @@ function showVersion() {
   console.log(`humanize v${pkg.version}`);
 }
 
+function showConfig() {
+  const { APIAnalyzer } = require('./api.js');
+  const api = new APIAnalyzer();
+  
+  console.log(`\n${c.bold}${c.cyan}═══ HUMANIZE CONFIGURATION ═══${c.reset}\n`);
+  
+  console.log(`${c.bold}API Integration:${c.reset}`);
+  console.log(`  GPTZero API:       ${process.env.GPTZERO_API_KEY ? c.green + '✓ Configured' : c.dim + '✗ Not configured'}${c.reset}`);
+  console.log(`  Originality.ai:    ${process.env.ORIGINALITY_API_KEY ? c.green + '✓ Configured' : c.dim + '✗ Not configured'}${c.reset}`);
+  console.log();
+  
+  console.log(`${c.bold}Detection Settings:${c.reset}`);
+  console.log(`  AI Vocabulary:     90+ words and phrases`);
+  console.log(`  Pattern Detectors: 9 structural patterns`);
+  console.log(`  Scoring:           5-component weighted average`);
+  console.log();
+  
+  console.log(`${c.bold}Supported Input:${c.reset}`);
+  console.log(`  File types:        .txt, .md, .js, .ts, .py, .html, .css, .json`);
+  console.log(`  Stdin:             Pipe text directly`);
+  console.log(`  Arguments:         Pass text as CLI args`);
+  console.log();
+  
+  if (!api.hasApiKeys()) {
+    console.log(`${c.yellow}💡 To enable API-based detection:${c.reset}`);
+    console.log(`${c.dim}   export GPTZERO_API_KEY="your-key-here"${c.reset}`);
+    console.log(`${c.dim}   export ORIGINALITY_API_KEY="your-key-here"${c.reset}`);
+    console.log();
+  }
+}
+
+function watchDirectory(dir, threshold = 70, options = {}) {
+  const fs = require('fs');
+  const path = require('path');
+  
+  console.log(`\n${c.bold}${c.cyan}═══ WATCH MODE ═══${c.reset}\n`);
+  console.log(`${c.dim}Directory:${c.reset} ${dir}`);
+  console.log(`${c.dim}Threshold:${c.reset} ${threshold}%`);
+  console.log(`${c.dim}Press Ctrl+C to stop${c.reset}\n`);
+  
+  const supportedExtensions = ['.txt', '.md', '.js', '.ts', '.py', '.html', '.css'];
+  let fileCount = 0;
+  
+  function analyzeFile(filePath) {
+    const ext = path.extname(filePath).toLowerCase();
+    if (!supportedExtensions.includes(ext)) return;
+    
+    try {
+      const text = fs.readFileSync(filePath, 'utf-8');
+      if (text.trim().length < 50) return; // Skip tiny files
+      
+      const score = scoring.calculate(text);
+      fileCount++;
+      
+      const relPath = path.relative(dir, filePath);
+      
+      if (score.overall >= threshold) {
+        console.log(`${c.red}⚠ HIGH RISK${c.reset} ${relPath} ${c.red}${score.overall}%${c.reset}`);
+        
+        // Show quick issues
+        const analysis = patterns.analyze(text);
+        if (analysis.aiVocabulary.length > 0) {
+          console.log(`  ${c.dim}AI words: ${analysis.aiVocabulary.slice(0, 3).map(v => v.word).join(', ')}${c.reset}`);
+        }
+        console.log();
+      } else if (!options.quiet) {
+        console.log(`${c.green}✓${c.reset} ${relPath} ${c.green}${score.overall}%${c.reset}`);
+      }
+    } catch (err) {
+      if (!options.quiet) {
+        console.log(`${c.red}✗${c.reset} ${path.relative(dir, filePath)} ${c.dim}(${err.message})${c.reset}`);
+      }
+    }
+  }
+  
+  function walkDir(dirPath) {
+    const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+    for (const entry of entries) {
+      const fullPath = path.join(dirPath, entry.name);
+      if (entry.isDirectory()) {
+        if (!entry.name.startsWith('.') && entry.name !== 'node_modules') {
+          walkDir(fullPath);
+        }
+      } else {
+        analyzeFile(fullPath);
+      }
+    }
+  }
+  
+  // Initial scan
+  console.log(`${c.dim}Scanning...${c.reset}\n`);
+  walkDir(dir);
+  console.log(`\n${c.dim}Initial scan complete. Analyzed ${fileCount} files.${c.reset}`);
+  
+  // Watch for changes
+  console.log(`${c.dim}Watching for changes...${c.reset}\n`);
+  
+  fs.watch(dir, { recursive: true }, (eventType, filename) => {
+    if (!filename) return;
+    const fullPath = path.join(dir, filename);
+    if (fs.existsSync(fullPath) && fs.statSync(fullPath).isFile()) {
+      analyzeFile(fullPath);
+    }
+  });
+  
+  // Handle graceful shutdown
+  process.on('SIGINT', () => {
+    console.log(`\n\n${c.green}Watch session ended. Analyzed ${fileCount} files.${c.reset}`);
+    process.exit(0);
+  });
+}
+
 module.exports = {
   analyzeText,
   scoreText,
@@ -248,4 +375,6 @@ module.exports = {
   transformText,
   showHelp,
   showVersion,
+  showConfig,
+  watchDirectory,
 };

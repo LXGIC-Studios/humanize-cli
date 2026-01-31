@@ -30,6 +30,15 @@ humanize transform "It is important to note that this solution is seamless."
 
 ## Commands
 
+| Command | Alias | Description |
+|---------|-------|-------------|
+| `analyze` | `a` | Detect AI markers and patterns |
+| `score` | `s` | Calculate detection risk score |
+| `suggest` | `sg` | Get improvement suggestions |
+| `transform` | `t` | Apply automatic fixes |
+| `watch` | `w` | Watch directory for changes |
+| `config` | `c` | Show configuration and API status |
+
 ### `humanize analyze <text>`
 
 Detects AI markers and patterns in your text:
@@ -114,6 +123,67 @@ It's important to use complete solutions.
 Risk score: 72% → 31% (↓41% improvement)
 ```
 
+### `humanize watch <directory>`
+
+Monitor a directory for changes and analyze files in real-time:
+
+```bash
+$ humanize watch ./content --threshold 60
+
+═══ WATCH MODE ═══
+
+Directory: ./content
+Threshold: 60%
+Press Ctrl+C to stop
+
+Scanning...
+
+✓ intro.md 23%
+⚠ HIGH RISK blog-post.md 78%
+  AI words: leverage, comprehensive, robust
+
+Initial scan complete. Analyzed 2 files.
+Watching for changes...
+```
+
+Options:
+- `-t, --threshold <n>` — Alert when score >= threshold (default: 70)
+- `-q, --quiet` — Only show high-risk files
+
+### `humanize config`
+
+Check configuration and API key status:
+
+```bash
+$ humanize config
+
+═══ HUMANIZE CONFIGURATION ═══
+
+API Integration:
+  GPTZero API:       ✓ Configured
+  Originality.ai:    ✗ Not configured
+
+Detection Settings:
+  AI Vocabulary:     90+ words and phrases
+  Pattern Detectors: 9 structural patterns
+  Scoring:           5-component weighted average
+```
+
+## API Integration
+
+Optional integration with GPTZero and Originality.ai for external validation:
+
+```bash
+# Set API keys
+export GPTZERO_API_KEY="your-key-here"
+export ORIGINALITY_API_KEY="your-key-here"
+
+# Run with API checks
+humanize analyze --api --file article.txt
+```
+
+The tool works fully offline by default. API keys add external validation on top of local analysis.
+
 ## Input Methods
 
 ```bash
@@ -141,6 +211,8 @@ humanize transform -f draft.txt | pbcopy  # macOS
 | `-j, --json` | Output results as JSON |
 | `-V, --verbose` | Show detailed output |
 | `-q, --quiet` | Minimal output |
+| `-a, --api` | Include GPTZero/Originality.ai checks |
+| `-t, --threshold` | Alert threshold for watch mode (default: 70) |
 | `-h, --help` | Show help |
 | `-v, --version` | Show version |
 
