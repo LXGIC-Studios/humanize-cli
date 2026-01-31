@@ -19,10 +19,7 @@ if (args.includes('--version') || args.includes('-v')) {
 
 // Get text input (from args, stdin, or file)
 async function getInput() {
-  const flagIndex = args.findIndex(a => a.startsWith('-'));
-  const textArgs = flagIndex > 1 ? args.slice(1, flagIndex) : args.slice(1);
-  
-  // Check for file input
+  // Check for file input first
   const fileFlag = args.indexOf('--file');
   const fFlag = args.indexOf('-f');
   const fileIndex = fileFlag !== -1 ? fileFlag : fFlag;
@@ -36,18 +33,31 @@ async function getInput() {
     process.exit(1);
   }
   
-  // Check for piped input
+  // Get text from remaining args (skip flags and their values)
+  const skipNext = new Set();
+  const textArgs = [];
+  for (let i = 1; i < args.length; i++) {
+    if (skipNext.has(i)) continue;
+    if (args[i] === '-f' || args[i] === '--file') {
+      skipNext.add(i + 1);
+      continue;
+    }
+    if (args[i].startsWith('-')) continue;
+    textArgs.push(args[i]);
+  }
+  
+  // Use args as text if provided
+  if (textArgs.length > 0) {
+    return textArgs.join(' ');
+  }
+  
+  // Check for piped input (only if no text args)
   if (!process.stdin.isTTY) {
     return new Promise((resolve) => {
       let data = '';
       process.stdin.on('data', chunk => data += chunk);
       process.stdin.on('end', () => resolve(data.trim()));
     });
-  }
-  
-  // Use remaining args as text
-  if (textArgs.length > 0) {
-    return textArgs.join(' ');
   }
   
   console.error('Error: No input provided. Use --file, pipe text, or provide text as arguments.');
