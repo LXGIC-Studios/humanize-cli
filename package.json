@@ -1,6 +1,6 @@
 {
   "name": "humanize-cli",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Analyze and humanize AI-generated text. Detect AI markers, score detection risk, and get actionable improvement suggestions.",
   "main": "src/index.js",
   "bin": {
