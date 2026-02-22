@@ -27,9 +27,9 @@
     "type": "git",
     "url": "git+https://github.com/LXGIC-Studios/humanize-cli.git"
   },
-  "homepage": "https://github.com/lxgicstudios/humanize-cli#readme",
+  "homepage": "https://github.com/LXGIC-Studios/humanize-cli#readme",
   "bugs": {
-    "url": "https://github.com/lxgicstudios/humanize-cli/issues"
+    "url": "https://github.com/LXGIC-Studios/humanize-cli/issues"
   },
   "engines": {
     "node": ">=16.0.0"
